@@ -27,11 +27,11 @@ class CSVFilter(CSVKitUtility):
         else:
             column_names = next(rows)
 
-        column_ids = parse_column_identifiers(None, column_names, self.args.zero_based, self.args.not_columns)
+        column_ids = parse_column_identifiers(None, column_names, self.args.zero_based)
 
         if self.args.filter_column:
             # get column_id for needed column_name
-            filter_column_id, = parse_column_identifiers(self.args.filter_column, column_names, self.args.zero_based, self.args.not_columns)
+            filter_column_id, = parse_column_identifiers(self.args.filter_column, column_names, self.args.zero_based)
 
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
         output.writerow([column_names[c] for c in column_ids])
@@ -39,6 +39,7 @@ class CSVFilter(CSVKitUtility):
         for row in rows:
             exec('%s = %s'%(str_colname, row[filter_column_id]))
             if eval(self.args.filter_expr): 
+                print row[filter_column_id]
                 out_row = [row[c] if c < len(row) else None for c in column_ids]
                 output.writerow(out_row)
 
