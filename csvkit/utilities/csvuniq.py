@@ -10,6 +10,7 @@ Used and modified with permission.
 """
 
 import itertools
+import re
 
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
@@ -24,8 +25,10 @@ class CSVUniq(CSVKitUtility):
             help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
         self.argparser.add_argument('-x', '--delete-empty-rows', dest='delete_empty', action='store_true',
             help='After cutting, delete rows which are completely empty.')
-        self.argparser.add_argument('--trim-column', dest='uniq_column',
+        self.argparser.add_argument('--uniq-column', dest='uniq_column',
             help='A comma separated list of column indices or names to be un-duplicated. Defaults to all columns.')
+        self.argparser.add_argument('--regex-column', dest='regex_column',
+            help='Select columns based on given regex. Defaults to all columns.')
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
@@ -38,6 +41,13 @@ class CSVUniq(CSVKitUtility):
             column_names = next(rows)
 
         column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
+        if self.args.regex_column:
+            c_ids = []
+            for i,j in zip(column_ids,column_names):
+                regex = re.compile(self.args.regex_column)
+                if regex.search(j):
+                    c_ids.append(i)
+            column_ids = c_ids[:]
         uniq_column_id, = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
         output.writerow([column_names[c] for c in column_ids])
