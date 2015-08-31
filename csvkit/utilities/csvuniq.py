@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 
 """
-CSVUniq is originally the work of eminent hackers Joe Germuska and Aaron Bycoffe.
-
-This code is forked from:
-https://gist.github.com/561347/9846ebf8d0a69b06681da9255ffe3d3f59ec2c97
-
-Used and modified with permission.
 """
 
 import itertools
-import re
 
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
