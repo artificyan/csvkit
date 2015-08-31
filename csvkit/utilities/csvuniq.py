@@ -31,6 +31,10 @@ class CSVUniq(CSVKitUtility):
             help='Select columns based on given regex. Defaults to all columns.')
         self.argparser.add_argument('--contains', dest='column_contains',
             help='Select columns based on whether or not string names contains given string. Defaults to all columns.')
+        self.argparser.add_argument('--not-regex-column', dest='not_regex_column',
+            help='Select columns based on failing given regex. Defaults to all columns.')
+        self.argparser.add_argument('--not-contains', dest='not_column_contains',
+            help='Select columns based on whether or not string names do not contain given string. Defaults to all columns.')
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
@@ -50,10 +54,23 @@ class CSVUniq(CSVKitUtility):
                 if regex.search(j):
                     c_ids.append(i)
             column_ids = c_ids[:] # overwrite existing
+        if self.args.not_regex_column:
+            c_ids = []
+            regex = re.compile(self.args.not_regex_column)
+            for i,j in zip(column_ids,column_names):
+                if not regex.search(j):
+                    c_ids.append(i)
+            column_ids = c_ids[:] # overwrite existing
         if self.args.column_contains:
             c_ids = []
             for i,j in zip(column_ids,column_names):
                 if self.args.column_contains in  j:
+                    c_ids.append(i)
+            column_ids = c_ids[:] # overwrite existing
+        if self.args.not_column_contains:
+            c_ids = []
+            for i,j in zip(column_ids,column_names):
+                if self.args.not_column_contains not in  j:
                     c_ids.append(i)
             column_ids = c_ids[:] # overwrite existing
         uniq_column_id = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
