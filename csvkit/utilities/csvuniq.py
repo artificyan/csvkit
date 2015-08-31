@@ -29,6 +29,8 @@ class CSVUniq(CSVKitUtility):
             help='A comma separated list of column indices or names to be un-duplicated. Defaults to all columns.')
         self.argparser.add_argument('--regex-column', dest='regex_column',
             help='Select columns based on given regex. Defaults to all columns.')
+        self.argparser.add_argument('--contains', dest='column_contains',
+            help='Select columns based on whether or not string names contains given string. Defaults to all columns.')
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
@@ -43,18 +45,26 @@ class CSVUniq(CSVKitUtility):
         column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
         if self.args.regex_column:
             c_ids = []
+            regex = re.compile(self.args.regex_column)
             for i,j in zip(column_ids,column_names):
-                regex = re.compile(self.args.regex_column)
                 if regex.search(j):
                     c_ids.append(i)
-            column_ids = c_ids[:]
-        uniq_column_id, = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
+            column_ids = c_ids[:] # overwrite existing
+        if self.args.column_contains:
+            c_ids = []
+            for i,j in zip(column_ids,column_names):
+                if self.args.column_contains in  j:
+                    c_ids.append(i)
+            column_ids = c_ids[:] # overwrite existing
+        uniq_column_id = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
         output.writerow([column_names[c] for c in column_ids])
         d = set() # cache for used-rows
+        # use tuple as keys for cache
+        cache_key = lambda row: tuple([row[i] for i in uniq_column_id])
         for row in rows:
-            if row[uniq_column_id] in d: continue
-            d.update([ row[uniq_column_id] ])
+            if cache_key(row) in d: continue
+            d.update([ cache_key(row) ])
             out_row = [row[c] if c < len(row) else None for c in column_ids]
             if self.args.delete_empty:
                 if ''.join(out_row) == '':
