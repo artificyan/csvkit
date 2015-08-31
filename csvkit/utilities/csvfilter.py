@@ -12,10 +12,6 @@ from csvkit.headers import make_default_headers
 class CSVFilter(CSVKitUtility):
     description = 'Filter rows based on column-wise condition.'
     def add_arguments(self):
-        self.argparser.add_argument('-c', '--columns', dest='columns',
-            help='A comma separated list of column indices or names to be extracted. Defaults to all columns.')
-        self.argparser.add_argument('-C', '--not-columns', dest='not_columns',
-            help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
         self.argparser.add_argument('--filter-column', dest='filter_column',
             help='Take only rows from specified column. Defaults to all columns.')
         self.argparser.add_argument('--filter-expr', dest='filter_expr',
@@ -31,7 +27,7 @@ class CSVFilter(CSVKitUtility):
         else:
             column_names = next(rows)
 
-        column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
+        column_ids = parse_column_identifiers(None, column_names, self.args.zero_based, self.args.not_columns)
 
         if self.args.filter_column:
             # get column_id for needed column_name
