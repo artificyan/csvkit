@@ -15,26 +15,16 @@ import re
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
 from csvkit.headers import make_default_headers
+from ColumnSelectorMixin import ColumnSelectorMixin
 
-class CSVUniq(CSVKitUtility):
+class CSVUniq(CSVKitUtility,ColumnSelectorMixin):
     description = 'Make rows unique based upon specific column rows. Like unix "uniq" command, but for tabular data.'
     def add_arguments(self):
-        self.argparser.add_argument('-c', '--columns', dest='columns',
-            help='A comma separated list of column indices or names to be extracted. Defaults to all columns.')
-        self.argparser.add_argument('-C', '--not-columns', dest='not_columns',
-            help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
+        ColumnSelectorMixin.add_arguments(self)
         self.argparser.add_argument('-x', '--delete-empty-rows', dest='delete_empty', action='store_true',
             help='After cutting, delete rows which are completely empty.')
         self.argparser.add_argument('--uniq-column', dest='uniq_column',
             help='A comma separated list of column indices or names to be un-duplicated. Defaults to all columns.')
-        self.argparser.add_argument('--regex-column', dest='regex_column',
-            help='Select columns based on given regex. Defaults to all columns.')
-        self.argparser.add_argument('--contains', dest='column_contains',
-            help='Select columns based on whether or not string names contains given string. Defaults to all columns.')
-        self.argparser.add_argument('--not-regex-column', dest='not_regex_column',
-            help='Select columns based on failing given regex. Defaults to all columns.')
-        self.argparser.add_argument('--not-contains', dest='not_column_contains',
-            help='Select columns based on whether or not string names do not contain given string. Defaults to all columns.')
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
@@ -47,32 +37,11 @@ class CSVUniq(CSVKitUtility):
             column_names = next(rows)
 
         column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
-        if self.args.regex_column:
-            c_ids = []
-            regex = re.compile(self.args.regex_column)
-            for i,j in zip(column_ids,column_names):
-                if regex.search(j):
-                    c_ids.append(i)
-            column_ids = c_ids[:] # overwrite existing
-        if self.args.not_regex_column:
-            c_ids = []
-            regex = re.compile(self.args.not_regex_column)
-            for i,j in zip(column_ids,column_names):
-                if not regex.search(j):
-                    c_ids.append(i)
-            column_ids = c_ids[:] # overwrite existing
-        if self.args.column_contains:
-            c_ids = []
-            for i,j in zip(column_ids,column_names):
-                if self.args.column_contains in  j:
-                    c_ids.append(i)
-            column_ids = c_ids[:] # overwrite existing
-        if self.args.not_column_contains:
-            c_ids = []
-            for i,j in zip(column_ids,column_names):
-                if self.args.not_column_contains not in  j:
-                    c_ids.append(i)
-            column_ids = c_ids[:] # overwrite existing
+        column_ids = self.parse_regex_column(self.args.regex_column,column_ids,column_names)
+        column_ids = self.parse_not_regex_column(self.args.not_regex_column,column_ids,column_names)
+        column_ids = self.parse_column_contains(self.args.column_contains,column_ids,column_names)
+        column_ids = self.parse_not_column_contains(self.args.not_column_contains,column_ids,column_names)
+
         uniq_column_id = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
         output.writerow([column_names[c] for c in column_ids])
