@@ -14,6 +14,8 @@ class CSVFilter(CSVKitUtility):
     def add_arguments(self):
         self.argparser.add_argument('--filter-expr', dest='filter_expr',
             help='Take only rows from previously specified column so that expr that evalutes True. Defaults to all columns.')
+        self.argparser.add_argument('--not-filter-expr', dest='not_filter_expr',
+            help='Take only rows from previously specified column so that expr that evalutes True. Defaults to all columns.')
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
@@ -32,11 +34,18 @@ class CSVFilter(CSVKitUtility):
         def float_or_else(x):
            try: return float(x)
            except ValueError: return x
-        for row in rows:
-            d = {i:float_or_else(j) for i,j in zip(column_names,row)} 
-            if eval(self.args.filter_expr,d): 
-                out_row = [row[c] if c < len(row) else None for c in column_ids]
-                output.writerow(out_row)
+        if self.args.filter_expr:
+           for row in rows:
+               d = {i:float_or_else(j) for i,j in zip(column_names,row)} 
+               if eval(self.args.filter_expr,d): 
+                   out_row = [row[c] if c < len(row) else None for c in column_ids]
+                   output.writerow(out_row)
+        elif self.args.not_filter_expr:
+           for row in rows:
+               d = {i:float_or_else(j) for i,j in zip(column_names,row)} 
+               if not eval(self.args.not_filter_expr,d): 
+                   out_row = [row[c] if c < len(row) else None for c in column_ids]
+                   output.writerow(out_row)
 
 def launch_new_instance():
     utility = CSVFilter()
