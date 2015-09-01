@@ -12,8 +12,6 @@ from csvkit.headers import make_default_headers
 class CSVFilter(CSVKitUtility):
     description = 'Filter rows based on column-wise condition.'
     def add_arguments(self):
-        self.argparser.add_argument('--filter-column', dest='filter_column',
-            help='Take only rows from specified column. Defaults to all columns.')
         self.argparser.add_argument('--filter-expr', dest='filter_expr',
             help='Take only rows from previously specified column so that expr that evalutes True. Defaults to all columns.')
 
@@ -28,18 +26,16 @@ class CSVFilter(CSVKitUtility):
             column_names = next(rows)
 
         column_ids = parse_column_identifiers(None, column_names, self.args.zero_based)
-
-        if self.args.filter_column:
-            # get column_id for needed column_name
-            filter_column_id, = parse_column_identifiers(self.args.filter_column, column_names, self.args.zero_based)
-
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
+        # write header
         output.writerow([column_names[c] for c in column_ids])
-        str_colname = column_names[ filter_column_id]
+        def float_or_else(x):
+           try: return float(x)
+           except ValueError: return x
         for row in rows:
-            exec('%s = %s'%(str_colname, row[filter_column_id]))
-            if eval(self.args.filter_expr): 
-                print row[filter_column_id]
+            d = {i:float_or_else(j) for i,j in zip(column_names,row)} 
+            if eval(self.args.filter_expr,d): 
+                print list(row)[-1]
                 out_row = [row[c] if c < len(row) else None for c in column_ids]
                 output.writerow(out_row)
 
