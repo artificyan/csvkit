@@ -2,10 +2,6 @@ import re
 
 class ColumnSelectorMixin(object):
     def add_arguments(self):
-        self.argparser.add_argument('-c', '--columns', dest='columns',
-            help='A comma separated list of column indices or names to be extracted. Defaults to all columns.')
-        self.argparser.add_argument('-C', '--not-columns', dest='not_columns',
-            help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
         self.argparser.add_argument('--regex-column', dest='regex_column',
             help='Select columns based on given regex. Defaults to all columns.')
         self.argparser.add_argument('--contains', dest='column_contains',

@@ -8,14 +8,10 @@ import itertools
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
 from csvkit.headers import make_default_headers
-from ColumnSelectorMixin import ColumnSelectorMixin
 
-class CSVUniq(CSVKitUtility,ColumnSelectorMixin):
+class CSVUniq(CSVKitUtility):
     description = 'Make rows unique based upon specific column rows. Like unix "uniq" command, but for tabular data.'
     def add_arguments(self):
-        ColumnSelectorMixin.add_arguments(self)
-        self.argparser.add_argument('-x', '--delete-empty-rows', dest='delete_empty', action='store_true',
-            help='After cutting, delete rows which are completely empty.')
         self.argparser.add_argument('--uniq-column', dest='uniq_column',
             help='A comma separated list of column indices or names to be un-duplicated. Defaults to all columns.')
 
@@ -45,9 +41,6 @@ class CSVUniq(CSVKitUtility,ColumnSelectorMixin):
             if cache_key(row) in d: continue
             d.update([ cache_key(row) ])
             out_row = [row[c] if c < len(row) else None for c in column_ids]
-            if self.args.delete_empty:
-                if ''.join(out_row) == '':
-                    continue
             output.writerow(out_row)
 
 def launch_new_instance():

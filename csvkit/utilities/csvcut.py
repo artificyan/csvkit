@@ -14,8 +14,9 @@ import itertools
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
 from csvkit.headers import make_default_headers
+from ColumnSelectorMixin import ColumnSelectorMixin
 
-class CSVCut(CSVKitUtility):
+class CSVCut(CSVKitUtility,ColumnSelectorMixin):
     description = 'Filter and truncate CSV files. Like unix "cut" command, but for tabular data.'
 
     def add_arguments(self):
@@ -27,6 +28,7 @@ class CSVCut(CSVKitUtility):
             help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
         self.argparser.add_argument('-x', '--delete-empty-rows', dest='delete_empty', action='store_true',
             help='After cutting, delete rows which are completely empty.')
+        ColumnSelectorMixin.add_arguments(self)
 
     def main(self):
         if self.args.names_only:
@@ -46,6 +48,11 @@ class CSVCut(CSVKitUtility):
             column_names = next(rows)
 
         column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
+        column_ids = self.parse_regex_column(self.args.regex_column,column_ids,column_names)
+        column_ids = self.parse_not_regex_column(self.args.not_regex_column,column_ids,column_names)
+        column_ids = self.parse_column_contains(self.args.column_contains,column_ids,column_names)
+        column_ids = self.parse_not_column_contains(self.args.not_column_contains,column_ids,column_names)
+
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
 
         output.writerow([column_names[c] for c in column_ids])
