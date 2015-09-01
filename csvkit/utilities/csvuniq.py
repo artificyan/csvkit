@@ -25,13 +25,8 @@ class CSVUniq(CSVKitUtility):
         else:
             column_names = next(rows)
 
-        column_ids = parse_column_identifiers(self.args.columns, column_names, self.args.zero_based, self.args.not_columns)
-        column_ids = self.parse_regex_column(self.args.regex_column,column_ids,column_names)
-        column_ids = self.parse_not_regex_column(self.args.not_regex_column,column_ids,column_names)
-        column_ids = self.parse_column_contains(self.args.column_contains,column_ids,column_names)
-        column_ids = self.parse_not_column_contains(self.args.not_column_contains,column_ids,column_names)
-
-        uniq_column_id = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based, self.args.not_columns)
+        column_ids = parse_column_identifiers(None,column_names, self.args.zero_based)
+        uniq_column_id = parse_column_identifiers(self.args.uniq_column, column_names, self.args.zero_based)
         output = CSVKitWriter(self.output_file, **self.writer_kwargs)
         output.writerow([column_names[c] for c in column_ids])
         d = set() # cache for used-rows

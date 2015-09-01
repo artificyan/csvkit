@@ -6,16 +6,15 @@ import re
 from csvkit import CSVKitReader, CSVKitWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
 from csvkit.headers import make_default_headers
-from ColumnSelectorMixin import ColumnSelectorMixin
 
 class CSVTrim(CSVKitUtility):
     description = 'trim leading/trailing whitespace from columns'
 
     def add_arguments(self):
         self.argparser.add_argument('-c', '--columns', dest='columns',
-            help='A comma separated list of column indices or names to be extracted. Defaults to all columns.')
+            help='A comma separated list of column indices or names to be extracted. Defaults to all columns.',default=None)
         self.argparser.add_argument('-C', '--not-columns', dest='not_columns',
-            help='A comma separated list of column indices or names to be excluded. Defaults to no columns.')
+            help='A comma separated list of column indices or names to be excluded. Defaults to no columns.',default=None)
 
     def main(self):
         rows = CSVKitReader(self.input_file, **self.reader_kwargs)
