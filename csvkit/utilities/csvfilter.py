@@ -35,7 +35,6 @@ class CSVFilter(CSVKitUtility):
         for row in rows:
             d = {i:float_or_else(j) for i,j in zip(column_names,row)} 
             if eval(self.args.filter_expr,d): 
-                print list(row)[-1]
                 out_row = [row[c] if c < len(row) else None for c in column_ids]
                 output.writerow(out_row)
 
