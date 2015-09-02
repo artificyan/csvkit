@@ -60,6 +60,7 @@ setup(
             'csvfilter = csvkit.utilities.csvfilter:launch_new_instance',
             'csvuniq = csvkit.utilities.csvuniq:launch_new_instance',
             'csvtrim = csvkit.utilities.csvtrim:launch_new_instance',
+            'csvmap = csvkit.utilities.csvmap:launch_new_instance',
             'csvformat = csvkit.utilities.csvformat:launch_new_instance',
             'csvgrep = csvkit.utilities.csvgrep:launch_new_instance',
             'csvjoin = csvkit.utilities.csvjoin:launch_new_instance',

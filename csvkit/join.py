@@ -6,6 +6,11 @@ def _get_ordered_keys(rows, column_index):
     """
     return [r[column_index] for r in rows]
 
+def remove_by_index(seq,idx):
+    seq.pop(idx)
+    return seq
+
+
 def _get_mapped_keys(rows, column_index):
     mapped_keys = {}
 
@@ -13,9 +18,9 @@ def _get_mapped_keys(rows, column_index):
         key = r[column_index]
 
         if key in mapped_keys:
-            mapped_keys[key].append(r)
+            mapped_keys[key].append(remove_by_index(r,column_index))
         else:
-            mapped_keys[key] = [r]
+            mapped_keys[key] = [remove_by_index(r,column_index)]
 
     return mapped_keys
 
@@ -58,7 +63,7 @@ def inner_join(left_table, left_column_id, right_table, right_column_id):
     # Map right rows to keys
     right_mapped_keys = _get_mapped_keys(right_rows, right_column_id)
 
-    output = [left_headers + right_headers]
+    output = [left_headers + remove_by_index(right_headers,right_column_id)]
 
     for left_row in left_rows:
         len_left_row = len(left_row)
