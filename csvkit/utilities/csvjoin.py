@@ -1,7 +1,27 @@
 #!/usr/bin/env python
+import os.path
+import sys
+
+def import_path(fullpath):
+    """ 
+    Import a file with full path specification. Allows one to
+    import from anywhere, something __import__ does not do. 
+    """
+    path, filename = os.path.split(fullpath)
+    filename, ext = os.path.splitext(filename)
+    sys.path.append(path)
+    module = __import__(filename)
+    reload(module) # Might be out of date
+    del sys.path[-1]
+    return module
+
+try:
+   join = import_path('C:\Users\jhunpingco\Desktop\csvkit\csvkit\join.py')
+except ImportError:
+   join = import_path('/c/Users/jhunpingco/Desktop/csvkit/csvkit/join.py')
 
 from csvkit import CSVKitReader, CSVKitWriter
-from csvkit import join
+##DEBUG from csvkit import join
 from csvkit.cli import CSVKitUtility, match_column_identifier
 
 class CSVJoin(CSVKitUtility):
